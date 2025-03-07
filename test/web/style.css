@@ -1,0 +1,6 @@
+body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+button { padding: 10px; margin: 5px; cursor: pointer; }
+select, input { padding: 10px; margin: 5px; }
+.control-group { margin-bottom: 15px; }
+#status { margin: 10px 0; padding: 10px; border: 1px solid #ccc; }
+#log { height: 200px; overflow-y: scroll; border: 1px solid #ccc; padding: 10px; margin-top: 20px; }
