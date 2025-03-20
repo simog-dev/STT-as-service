@@ -1,3 +1,6 @@
+#https://huggingface.co/openai/whisper-large-v3-turbo
+#https://huggingface.co/openai/whisper-large
+
 from transformers import AutoModelForSpeechSeq2Seq, AutoProcessor, pipeline
 import numpy as np
 import asyncio

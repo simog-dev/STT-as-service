@@ -33,15 +33,15 @@ async def websocket_endpoint(websocket: WebSocket):
                     if "audio" not in audio_data:
                         await websocket.send_json({"error": "Invalid format: 'audio' missing"})
                         continue
-                        
+                    #here the audio comes in base64 format and we need to decode it
                     audio_bytes = base64.b64decode(audio_data["audio"])
                     
                     sampling_rate = audio_data.get("sampling_rate", sample_rate)
                     
-                    # Normalize to an array of [0., 1.] (assuming int16)
+                    # transform the audio_bytes to an array of int16, then transformed in float32 (-32768.0,32768.0) then normalized to [-1., 1.]
                     audio_array = np.frombuffer(audio_bytes, dtype=np.int16).astype(np.float32) / 32768.0
                     
-                    # Verifica che l'audio non sia costante o silenzioso
+                    # verifica che l'audio non sia silenzio
                     if np.max(np.abs(audio_array)) < 0.005:
                         print("Skipping, audio too weak")
                         continue

@@ -8,6 +8,7 @@ const stopBtn = document.getElementById('stopBtn');
 const statusEl = document.getElementById('status');
 const transcriptionEl = document.getElementById('transcription');
 const logEl = document.getElementById('log');
+const socket_url = 'ws://africa.isti.cnr.it:8000/transcribe/realtime';
 
 // Variabili globali
 let ws;
@@ -22,7 +23,7 @@ let audioBuffer = [];
 let silenceStartTime = 0;
 let isSilence = true;  // Start assuming silence
 const SILENCE_THRESHOLD = 0.10;  // Livello audio considerato silenzio
-const SILENCE_DURATION = 1000;   // Durata del silenzio in ms (1 secondo)
+const SILENCE_DURATION = 1500;   // Durata del silenzio in ms (1 secondo e mez)
 let bufferTotalSamples = 0;      // Contatore dei campioni totali nel buffer
 let isBuffering = false;         // Flag to track if we're actively buffering speech
 
@@ -87,7 +88,7 @@ async function loadAudioDevices() {
 function connectWebSocket() {
     statusEl.textContent = 'Connessione...';
     
-    ws = new WebSocket('ws://africa.isti.cnr.it:8000/transcribe/realtime');
+    ws = new WebSocket(`${socket_url}`);
     
     ws.onopen = () => {
         statusEl.textContent = 'Connesso al server';
@@ -151,9 +152,11 @@ async function startMicrophone() {
         addLog(`AudioContext creato: sample rate=${audioContext.sampleRate}`);
         addLog(`Dispositivo selezionato: ${micSelect.options[micSelect.selectedIndex].text}`);
         
-        // Configura le opzioni di acquisizione audio
+        // Configuro mic con parametri per migliorare la qualità audio
         const constraints = {
             audio: {
+                //https://stackoverflow.com/questions/32086122/getusermedia-facingmode
+                //https://github.com/react-native-webrtc/react-native-webrtc/issues/795
                 deviceId: { exact: selectedDeviceId },
                 echoCancellation: true,
                 noiseSuppression: true,
@@ -161,12 +164,14 @@ async function startMicrophone() {
             }
         };
         
-        // Richiedi l'accesso al microfono specifico
+        // Richiedo l'accesso al microfono specifico
         mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
         
         sourceNode = audioContext.createMediaStreamSource(mediaStream);
-        
-        // Crea un processor node per inviare i dati
+        /*Questo serve per sostituire la funzione createScriptProcessor che è deprecata, ma funziona solo in https, per il momento è troppo sbatti
+        await audioContext.audioWorklet.addModule("./linear-pcm-processor.js");
+        processorNode = new AudioWorkletNode(audioContext, "linear-pcm-processor");
+        */
         processorNode = audioContext.createScriptProcessor(4096, 1, 1);
         
         sourceNode.connect(processorNode);
